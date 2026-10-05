@@ -1,69 +1,139 @@
-import Image from "next/image";
+import Link from "next/link";
 
-export default function Home() {
+export default function HomePage() {
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
+    <main className="min-h-screen bg-black text-white">
+      {/* Navbar */}
+      <nav className="border-b border-gray-800">
+        <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-5">
+          <Link href="/" className="text-2xl font-bold">
+            Task<span className="text-blue-500">Flow</span>
+          </Link>
+
+          <div className="flex items-center gap-3">
+            <Link
+              href="/login"
+              className="rounded-lg px-4 py-2 text-sm font-medium text-gray-300 hover:bg-gray-900"
             >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
+              Login
+            </Link>
+
+            <Link
+              href="/register"
+              className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
             >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+              Get Started
+            </Link>
+          </div>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+      </nav>
+
+      {/* Hero */}
+      <section className="mx-auto flex max-w-4xl flex-col items-center px-6 py-7 text-center">
+        <div className="mb-4 rounded-full bg-blue-500/10 px-4 py-2 text-lg font-extrabold text-blue-400">
+          Task Management Tool
+        </div>
+
+        <h1 className="text-5xl font-bold tracking-tight sm:text-6xl">
+          Organize your work.
+          <br />
+          <span className="text-blue-500">Get things done.</span>
+        </h1>
+
+        <p className="mt-6 max-w-2xl text-lg leading-8 text-gray-400">
+          TaskFlow helps you organize projects, manage tasks, and
+          collaborate with your team — all in one simple workspace.
+        </p>
+
+        <div className="mt-8 flex gap-4">
+          <Link
+            href="/register"
+            className="rounded-lg bg-blue-600 px-6 py-3 font-medium text-white hover:bg-blue-700"
           >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
+            Get Started
+          </Link>
+
+          <Link
+            href="/login"
+            className="rounded-lg border border-gray-700 px-6 py-3 font-medium text-gray-300 hover:bg-gray-900"
+          >
+            Login
+          </Link>
+        </div>
+      </section>
+
+      {/* Features */}
+      <section>
+        <div className="mx-auto max-w-6xl px-6 py-7">
+          <div className="text-center">
+            <h2 className="text-3xl font-bold">
+              Everything you need
+            </h2>
+
+            <p className="mt-3 text-gray-400">
+              Keep your team's work organized and moving forward.
+            </p>
+          </div>
+
+          <div className="mt-12 grid gap-6 md:grid-cols-3">
+            <Feature
+              title="Manage Tasks"
+              description="Create, assign, prioritize, and track tasks easily."
             />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+
+            <Feature
+              title="Work Together"
+              description="Collaborate with your team and keep everyone aligned."
+            />
+
+            <Feature
+              title="Track Progress"
+              description="See what is pending, in progress, and completed."
+            />
+          </div>
         </div>
-      </main>
+      </section>
+
+      {/* Bottom CTA */}
+      <section className="mx-auto max-w-4xl px-6 py-4 text-center">
+        <h2 className="text-3xl font-bold">
+          Ready to get organized?
+        </h2>
+
+        <p className="mt-3 text-gray-400">
+          Create your free TaskFlow account and start managing your work.
+        </p>
+
+        <Link
+          href="/register"
+          className="mt-6 inline-block rounded-lg bg-blue-600 px-6 py-3 font-medium text-white hover:bg-blue-700"
+        >
+          Create Account
+        </Link>
+      </section>
+
+      {/* Footer */}
+      <footer className="border-t border-gray-800 py-6 text-center text-sm text-gray-500">
+        © {new Date().getFullYear()} TaskFlow
+      </footer>
+    </main>
+  );
+}
+
+function Feature({
+  title,
+  description,
+}: {
+  title: string;
+  description: string;
+}) {
+  return (
+    <div className="rounded-xl border border-gray-800 bg-gray-900 p-6">
+      <h3 className="text-lg font-semibold">{title}</h3>
+
+      <p className="mt-2 leading-6 text-gray-400">
+        {description}
+      </p>
     </div>
   );
 }
