@@ -71,7 +71,7 @@ export default function HomePage() {
             </h2>
 
             <p className="mt-3 text-gray-400">
-              Keep your team's work organized and moving forward.
+              Keep your team&apos;s work organized and moving forward.
             </p>
           </div>
 
