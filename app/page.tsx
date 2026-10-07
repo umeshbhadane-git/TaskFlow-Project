@@ -4,7 +4,7 @@ export default function HomePage() {
   return (
     <main className="min-h-screen bg-black text-white">
       {/* Navbar */}
-      <nav className="border-b border-gray-800">
+      {/* <nav className="border-b border-gray-800">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-5">
           <Link href="/" className="text-2xl font-bold">
             Task<span className="text-blue-500">Flow</span>
@@ -26,7 +26,7 @@ export default function HomePage() {
             </Link>
           </div>
         </div>
-      </nav>
+      </nav> */}
 
       {/* Hero */}
       <section className="mx-auto flex max-w-4xl flex-col items-center px-6 py-7 text-center">
