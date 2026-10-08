@@ -5,6 +5,7 @@ import { connectDB } from "@/lib/db";
 import Workspace from "@/models/Workspace";
 import WorkspaceMember from "@/models/WorkspaceMember";
 import { createWorkspaceSchema } from "@/features/workspace/schemas/workspace.schema";
+import { recordWorkspaceActivity } from "@/features/workspace/services/recordWorkspaceActivity";
 
 export type CreateWorkspaceActionResult =
   | {
@@ -76,6 +77,13 @@ export async function createWorkspace(
       workspaceId: workspace._id,
       userId: session.user.id,
       role: "OWNER",
+    });
+
+    await recordWorkspaceActivity({
+      workspaceId: workspace._id.toString(),
+      actorId: session.user.id,
+      type: "WORKSPACE_CREATED",
+      workspaceName: workspace.name,
     });
 
     return {

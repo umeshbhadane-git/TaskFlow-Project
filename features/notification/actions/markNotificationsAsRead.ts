@@ -1,5 +1,7 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
+
 import { auth } from "@/lib/auth";
 import { connectDB } from "@/lib/db";
 
@@ -20,7 +22,10 @@ export type MarkNotificationsAsReadResult =
 
 export async function markNotificationsAsRead(): Promise<MarkNotificationsAsReadResult> {
   try {
+    // --------------------------------------------------
     // 1. Check authentication
+    // --------------------------------------------------
+
     const session = await auth();
 
     if (!session?.user?.id) {
@@ -33,10 +38,17 @@ export async function markNotificationsAsRead(): Promise<MarkNotificationsAsRead
       };
     }
 
+    // --------------------------------------------------
     // 2. Connect to MongoDB
+    // --------------------------------------------------
+
     await connectDB();
 
-    // 3. Mark only this user's unread notifications as read
+    // --------------------------------------------------
+    // 3. Mark only this user's unread notifications
+    //    as read
+    // --------------------------------------------------
+
     await Notification.updateMany(
       {
         recipientId: session.user.id,
@@ -48,6 +60,16 @@ export async function markNotificationsAsRead(): Promise<MarkNotificationsAsRead
         },
       }
     );
+
+    // --------------------------------------------------
+    // 4. Revalidate notification pages
+    // --------------------------------------------------
+
+    revalidatePath("/notifications");
+
+    // --------------------------------------------------
+    // 5. Success
+    // --------------------------------------------------
 
     return {
       success: true,
@@ -63,7 +85,8 @@ export async function markNotificationsAsRead(): Promise<MarkNotificationsAsRead
       success: false,
       error: {
         code: "INTERNAL_ERROR",
-        message: "Unable to update notifications.",
+        message:
+          "Unable to update notifications.",
       },
     };
   }

@@ -11,7 +11,7 @@ export async function getUserWorkspaces(userId: string) {
   })
     .populate({
       path: "workspaceId",
-      select: "name description ownerId",
+      select: "name description ownerId status",
       model: Workspace,
     })
     .sort({ joinedAt: -1 })
@@ -23,6 +23,7 @@ export async function getUserWorkspaces(userId: string) {
       name: string;
       description: string;
       ownerId: string;
+      status?: "ACTIVE" | "INACTIVE";
     };
 
     return {
@@ -32,6 +33,7 @@ export async function getUserWorkspaces(userId: string) {
       ownerId: workspace.ownerId.toString(),
       role: membership.role,
       joinedAt: membership.joinedAt,
+      status: workspace.status ?? "ACTIVE",
     };
   });
 }

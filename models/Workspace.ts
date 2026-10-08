@@ -1,9 +1,12 @@
 import mongoose, { Document, Model, Schema } from "mongoose";
 
+export type WorkspaceStatus = "ACTIVE" | "INACTIVE";
+
 export interface IWorkspace extends Document {
   name: string;
   description?: string;
   ownerId: mongoose.Types.ObjectId;
+  status: WorkspaceStatus;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -21,7 +24,10 @@ const workspaceSchema = new Schema<IWorkspace>(
     description: {
       type: String,
       trim: true,
-      maxlength: [500, "Workspace description cannot exceed 500 characters"],
+      maxlength: [
+        500,
+        "Workspace description cannot exceed 500 characters",
+      ],
       default: "",
     },
 
@@ -30,11 +36,21 @@ const workspaceSchema = new Schema<IWorkspace>(
       ref: "User",
       required: [true, "Workspace owner is required"],
     },
+
+    status: {
+      type: String,
+      enum: ["ACTIVE", "INACTIVE"],
+      required: [true, "Workspace status is required"],
+      default: "ACTIVE",
+    },
   },
   {
     timestamps: true,
   }
 );
+
+workspaceSchema.index({ ownerId: 1 });
+workspaceSchema.index({ status: 1 });
 
 const Workspace: Model<IWorkspace> =
   mongoose.models.Workspace ||

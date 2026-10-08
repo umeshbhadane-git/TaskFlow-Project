@@ -1,9 +1,6 @@
 import mongoose, { Document, Model, Schema } from "mongoose";
 
-export type JoinRequestStatus =
-  | "PENDING"
-  | "APPROVED"
-  | "REJECTED";
+export type JoinRequestStatus = "PENDING" | "APPROVED" | "REJECTED";
 
 export interface IJoinRequest extends Document {
   workspaceId: mongoose.Types.ObjectId;
@@ -39,8 +36,6 @@ const joinRequestSchema = new Schema<IJoinRequest>(
   }
 );
 
-// A user can have only one pending request
-// for the same workspace.
 joinRequestSchema.index(
   { workspaceId: 1, userId: 1, status: 1 },
   {
@@ -53,9 +48,6 @@ joinRequestSchema.index(
 
 const JoinRequest: Model<IJoinRequest> =
   mongoose.models.JoinRequest ||
-  mongoose.model<IJoinRequest>(
-    "JoinRequest",
-    joinRequestSchema
-  );
+  mongoose.model<IJoinRequest>("JoinRequest", joinRequestSchema);
 
 export default JoinRequest;

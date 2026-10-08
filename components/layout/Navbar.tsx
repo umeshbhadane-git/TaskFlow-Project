@@ -16,14 +16,22 @@ export default async function Navbar() {
         {/* Left Side */}
         <div className="flex items-center gap-2">
           {/* Mobile Menu */}
-          {isAuthenticated && <MobileSidebar />}
+          {isAuthenticated && (
+            <MobileSidebar
+              user={{
+                name: session.user.name,
+                email: session.user.email,
+                image: session.user.image,
+              }}
+            />
+          )}
 
           {/* Logo */}
           <Link
             href={isAuthenticated ? "/dashboard" : "/"}
             className="text-xl font-bold tracking-tight text-gray-900 transition hover:opacity-80 dark:text-white"
           >
-            TaskFlow
+            Task<span className="text-blue-600 dark:text-blue-400">Flow</span>
           </Link>
         </div>
 
@@ -31,14 +39,6 @@ export default async function Navbar() {
         <div className="flex items-center gap-1">
           {isAuthenticated ? (
             <>
-              {/* User Profile */}
-              <Link
-                href="/profile"
-                className="hidden rounded-lg px-3 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-100 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 sm:block dark:text-gray-200 dark:hover:bg-gray-800 dark:hover:text-white"
-              >
-                {session.user?.name || "User"}
-              </Link>
-
               {/* Theme Toggle */}
               <ThemeToggle />
 

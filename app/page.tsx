@@ -2,7 +2,7 @@ import Link from "next/link";
 
 export default function HomePage() {
   return (
-    <main className="min-h-screen bg-black text-white">
+    <main className="min-h-screen bg-white text-gray-900 dark:bg-black dark:text-white">
       {/* Navbar */}
       {/* <nav className="border-b border-gray-800">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-5">
@@ -40,7 +40,7 @@ export default function HomePage() {
           <span className="text-blue-500">Get things done.</span>
         </h1>
 
-        <p className="mt-6 max-w-2xl text-lg leading-8 text-gray-400">
+        <p className="mt-6 max-w-2xl text-lg leading-8 text-gray-600 dark:text-gray-400">
           TaskFlow helps you organize projects, manage tasks, and
           collaborate with your team — all in one simple workspace.
         </p>
@@ -55,7 +55,7 @@ export default function HomePage() {
 
           <Link
             href="/login"
-            className="rounded-lg border border-gray-700 px-6 py-3 font-medium text-gray-300 hover:bg-gray-900"
+            className="rounded-lg border border-gray-300 px-6 py-3 font-medium text-gray-700 hover:bg-gray-100 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-900"
           >
             Login
           </Link>
@@ -70,7 +70,7 @@ export default function HomePage() {
               Everything you need
             </h2>
 
-            <p className="mt-3 text-gray-400">
+            <p className="mt-3 text-gray-600 dark:text-gray-400">
               Keep your team&apos;s work organized and moving forward.
             </p>
           </div>
@@ -113,7 +113,7 @@ export default function HomePage() {
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-gray-800 py-6 text-center text-sm text-gray-500">
+      <footer className="border-t border-gray-200 py-6 text-center text-sm text-gray-500 dark:border-gray-800">
         © {new Date().getFullYear()} TaskFlow
       </footer>
     </main>
@@ -128,10 +128,10 @@ function Feature({
   description: string;
 }) {
   return (
-    <div className="rounded-xl border border-gray-800 bg-gray-900 p-6">
+    <div className="rounded-xl border border-gray-200 bg-gray-50 p-6 dark:border-gray-800 dark:bg-gray-900">
       <h3 className="text-lg font-semibold">{title}</h3>
 
-      <p className="mt-2 leading-6 text-gray-400">
+      <p className="mt-2 leading-6 text-gray-600 dark:text-gray-400">
         {description}
       </p>
     </div>
