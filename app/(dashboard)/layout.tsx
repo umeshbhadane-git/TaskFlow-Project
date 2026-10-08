@@ -15,12 +15,12 @@ export default async function DashboardLayout({
   }
 
   return (
-    <div className="min-h-[calc(100vh-4rem)]">
+    <div className="min-h-[calc(100vh-8rem)]">
       {/* Fixed desktop sidebar */}
       <Sidebar />
 
       {/* Main content */}
-      <main className="min-h-[calc(100vh-4rem)] lg:ml-64">
+      <main className="min-h-[calc(100vh-8rem)] lg:ml-64">
         <div className="min-w-0 p-4 sm:p-6">
           {children}
         </div>

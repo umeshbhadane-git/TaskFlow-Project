@@ -1,35 +1,26 @@
 import Link from "next/link";
+import {
+  ArrowLeft,
+  CheckCircle2,
+  Clock3,
+  ListTodo,
+  Plus,
+} from "lucide-react";
 import { notFound, redirect } from "next/navigation";
 
 import { auth } from "@/lib/auth";
 import { connectDB } from "@/lib/db";
-
 import Workspace from "@/models/Workspace";
 import WorkspaceMember from "@/models/WorkspaceMember";
+
+import { getWorkspaceTasks } from "@/features/task/services/getWorkspaceTasks";
+import TaskBoardContainer from "@/features/task/components/TaskBoardContainer";
 
 interface BoardPageProps {
   params: Promise<{
     workspaceId: string;
   }>;
 }
-
-const columns = [
-  {
-    key: "TODO",
-    title: "To Do",
-    description: "Tasks waiting to be started",
-  },
-  {
-    key: "IN_PROGRESS",
-    title: "In Progress",
-    description: "Tasks currently being worked on",
-  },
-  {
-    key: "DONE",
-    title: "Done",
-    description: "Completed tasks",
-  },
-] as const;
 
 export default async function BoardPage({
   params,
@@ -44,81 +35,213 @@ export default async function BoardPage({
 
   await connectDB();
 
-  // Make sure the user belongs to this workspace.
+  // --------------------------------------------------
+  // Find workspace
+  // --------------------------------------------------
+
+  const workspace = await Workspace.findById(workspaceId).lean();
+
+  if (!workspace) {
+    notFound();
+  }
+
+  // --------------------------------------------------
+  // Check workspace status
+  // --------------------------------------------------
+
+  if (workspace.status === "INACTIVE") {
+    notFound();
+  }
+
+  // --------------------------------------------------
+  // Check workspace membership
+  // --------------------------------------------------
+
   const membership = await WorkspaceMember.findOne({
     workspaceId,
     userId: session.user.id,
   }).lean();
 
   if (!membership) {
-    notFound();
+    redirect("/workspaces");
   }
 
-  // Make sure the workspace exists.
-  const workspace = await Workspace.findById(workspaceId)
-    .select("name")
-    .lean();
+  // --------------------------------------------------
+  // Get workspace tasks
+  // --------------------------------------------------
 
-  if (!workspace) {
-    notFound();
-  }
+  const tasks = await getWorkspaceTasks(workspaceId);
+
+  // --------------------------------------------------
+  // Check owner
+  // --------------------------------------------------
+
+  const isOwner =
+    workspace.ownerId.toString() === session.user.id;
+
+  // --------------------------------------------------
+  // Task statistics
+  // --------------------------------------------------
+
+  const totalTasks = tasks.length;
+
+  const todoTasks = tasks.filter(
+    (task) => task.status === "TODO"
+  ).length;
+
+  const inProgressTasks = tasks.filter(
+    (task) => task.status === "IN_PROGRESS"
+  ).length;
+
+  const completedTasks = tasks.filter(
+    (task) => task.status === "DONE"
+  ).length;
 
   return (
-    <section className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
+    <div className="space-y-8">
+      {/* ==================================================
+          BACK TO WORKSPACE
+      ================================================== */}
+
+      <Link
+        href={`/workspaces/${workspaceId}`}
+        className="inline-flex items-center gap-2 text-sm font-medium text-blue-600 transition-colors hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
+      >
+        <ArrowLeft className="h-4 w-4" />
+        Back to Workspace
+      </Link>
+
+      {/* ==================================================
+          PAGE HEADER
+      ================================================== */}
+
+      <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <Link
-            href={`/workspaces/${workspaceId}`}
-            className="text-sm font-medium text-blue-600 hover:text-blue-700 dark:text-blue-400"
-          >
-            ← Back to Workspace
-          </Link>
+          <p className="mb-2 text-xl font-semibold text-black dark:text-white">
+            {workspace.name}
+          </p>
 
-          <h1 className="mt-3 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
-            {workspace.name} — Board
-          </h1>
-
-          <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
-            Manage and track tasks across the workspace.
+          <p className="mt-2 max-w-2xl text-sm text-gray-700 dark:text-gray-400">
+            Manage your workspace tasks and track
+            their progress from start to completion.
           </p>
         </div>
 
-        <Link
-          href={`/workspaces/${workspaceId}/tasks`}
-          className="inline-flex items-center justify-center rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-blue-700"
-        >
-          Manage Tasks
-        </Link>
+        {/* Create Task - Owner only */}
+        {isOwner && (
+          <Link
+            href={`/workspaces/${workspaceId}/tasks/create`}
+            className="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 text-sm font-medium text-white shadow-sm transition-colors hover:bg-blue-700"
+          >
+            <Plus className="h-4 w-4" />
+            Create Task
+          </Link>
+        )}
       </div>
 
-      {/* Board */}
-      <div className="grid gap-4 lg:grid-cols-3">
-        {columns.map((column) => (
-          <div
-            key={column.key}
-            className="min-h-[500px] rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-gray-800 dark:bg-gray-950"
-          >
-            {/* Column Header */}
-            <div className="mb-4">
-              <h2 className="font-semibold text-gray-900 dark:text-white">
-                {column.title}
-              </h2>
+      {/* ==================================================
+          TASK STATISTICS
+      ================================================== */}
 
-              <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                {column.description}
+      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+        {/* Total Tasks */}
+        <div className="rounded-xl border border-gray-300 bg-white p-4 text-black shadow-sm dark:border-gray-800 dark:bg-gray-900 dark:text-white">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-gray-700 dark:text-gray-300">
+                Total Tasks
+              </p>
+
+              <p className="mt-1 text-2xl font-bold text-black dark:text-white">
+                {totalTasks}
               </p>
             </div>
 
-            {/* Empty Column */}
-            <div className="flex min-h-[400px] items-center justify-center rounded-lg border border-dashed border-gray-300 dark:border-gray-700">
-              <p className="text-sm text-gray-500 dark:text-gray-400">
-                No tasks yet
-              </p>
+            <div className="rounded-lg bg-gray-100 p-2 dark:bg-blue-900">
+              <ListTodo className="h-5 w-5 text-blue-700 dark:text-blue-200" />
             </div>
           </div>
-        ))}
+        </div>
+
+        {/* To Do */}
+        <div className="rounded-xl border border-gray-300 bg-white p-4 text-black shadow-sm dark:border-gray-800 dark:bg-gray-900 dark:text-white">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-gray-700 dark:text-gray-300">
+                To Do
+              </p>
+
+              <p className="mt-1 text-2xl font-bold text-black dark:text-white">
+                {todoTasks}
+              </p>
+            </div>
+
+            <div className="rounded-lg bg-gray-100 p-2 dark:bg-blue-900">
+              <ListTodo className="h-5 w-5 text-blue-700 dark:text-blue-200" />
+            </div>
+          </div>
+        </div>
+
+        {/* In Progress */}
+        <div className="rounded-xl border border-gray-300 bg-white p-4 text-black shadow-sm dark:border-gray-800 dark:bg-gray-900 dark:text-white">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-gray-700 dark:text-gray-300">
+                In Progress
+              </p>
+
+              <p className="mt-1 text-2xl font-bold text-black dark:text-white">
+                {inProgressTasks}
+              </p>
+            </div>
+
+            <div className="rounded-lg bg-gray-100 p-2 dark:bg-blue-900">
+              <Clock3 className="h-5 w-5 text-blue-700 dark:text-blue-200" />
+            </div>
+          </div>
+        </div>
+
+        {/* Completed */}
+        <div className="rounded-xl border border-gray-300 bg-white p-4 text-black shadow-sm dark:border-gray-800 dark:bg-gray-900 dark:text-white">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-gray-700 dark:text-gray-300">
+                Completed
+              </p>
+
+              <p className="mt-1 text-2xl font-bold text-black dark:text-white">
+                {completedTasks}
+              </p>
+            </div>
+
+            <div className="rounded-lg bg-gray-100 p-2 dark:bg-blue-900">
+              <CheckCircle2 className="h-5 w-5 text-blue-700 dark:text-blue-200" />
+            </div>
+          </div>
+        </div>
       </div>
-    </section>
+
+      {/* ==================================================
+          TASK BOARD
+      ================================================== */}
+
+      <section>
+        <div className="mb-4">
+          <h2 className="text-lg font-semibold">
+            Task Board
+          </h2>
+
+          <p className="text-sm text-gray-700 dark:text-gray-400">
+            Drag and drop tasks to update their status.
+          </p>
+        </div>
+
+        <TaskBoardContainer
+          tasks={tasks}
+          currentUserId={session.user.id}
+          isOwner={isOwner}
+        />
+      </section>
+    </div>
   );
 }

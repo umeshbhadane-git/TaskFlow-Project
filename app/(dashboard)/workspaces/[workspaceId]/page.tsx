@@ -45,6 +45,11 @@ export default async function WorkspacePage({
     notFound();
   }
 
+  // Inactive workspaces cannot be accessed normally.
+  if (workspace.status === "INACTIVE") {
+    notFound();
+  }
+
   return (
     <section className="space-y-6">
       {/* Header */}
@@ -76,47 +81,47 @@ export default async function WorkspacePage({
       {/* Workspace Navigation */}
       <nav
         aria-label="Workspace navigation"
-        className="overflow-x-auto rounded-xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900"
+        className="w-full overflow-x-auto rounded-xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900"
       >
-        <div className="flex min-w-max">
+        <div className="flex w-max min-w-full sm:w-full">
           <Link
             href={`/workspaces/${workspaceId}`}
-            className="border-b-2 border-blue-600 px-4 py-3 text-sm font-medium text-blue-600 dark:text-blue-400"
+            className="shrink-0 border-b-2 border-blue-600 px-4 py-3 text-center text-sm font-medium text-blue-600 dark:text-blue-400 sm:flex-1"
           >
             Overview
           </Link>
 
           <Link
             href={`/workspaces/${workspaceId}/board`}
-            className="px-4 py-3 text-sm font-medium text-gray-600 transition hover:bg-gray-50 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-white"
+            className="shrink-0 px-4 py-3 text-center text-sm font-medium text-gray-600 transition hover:bg-gray-50 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-white sm:flex-1"
           >
             Board
           </Link>
 
           <Link
             href={`/workspaces/${workspaceId}/tasks`}
-            className="px-4 py-3 text-sm font-medium text-gray-600 transition hover:bg-gray-50 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-white"
+            className="shrink-0 px-4 py-3 text-center text-sm font-medium text-gray-600 transition hover:bg-gray-50 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-white sm:flex-1"
           >
             Tasks
           </Link>
 
           <Link
             href={`/workspaces/${workspaceId}/members`}
-            className="px-4 py-3 text-sm font-medium text-gray-600 transition hover:bg-gray-50 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-white"
+            className="shrink-0 px-4 py-3 text-center text-sm font-medium text-gray-600 transition hover:bg-gray-50 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-white sm:flex-1"
           >
             Members
           </Link>
 
           <Link
             href={`/workspaces/${workspaceId}/activity`}
-            className="px-4 py-3 text-sm font-medium text-gray-600 transition hover:bg-gray-50 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-white"
+            className="shrink-0 px-4 py-3 text-center text-sm font-medium text-gray-600 transition hover:bg-gray-50 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-white sm:flex-1"
           >
             Activity
           </Link>
 
           <Link
             href={`/workspaces/${workspaceId}/settings`}
-            className="px-4 py-3 text-sm font-medium text-gray-600 transition hover:bg-gray-50 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-white"
+            className="shrink-0 px-4 py-3 text-center text-sm font-medium text-gray-600 transition hover:bg-gray-50 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-white sm:flex-1"
           >
             Settings
           </Link>
@@ -124,7 +129,7 @@ export default async function WorkspacePage({
           {membership.role === "OWNER" && (
             <Link
               href={`/workspaces/${workspaceId}/requests`}
-              className="px-4 py-3 text-sm font-medium text-gray-600 transition hover:bg-gray-50 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-white"
+              className="shrink-0 px-4 py-3 text-center text-sm font-medium text-gray-600 transition hover:bg-gray-50 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-white sm:flex-1"
             >
               Join Requests
             </Link>

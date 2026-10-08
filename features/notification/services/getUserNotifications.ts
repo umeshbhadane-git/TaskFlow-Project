@@ -1,5 +1,7 @@
 import { connectDB } from "@/lib/db";
 import Notification from "@/models/Notification";
+import Task from "@/models/Task";
+import Workspace from "@/models/Workspace";
 
 export async function getUserNotifications(userId: string) {
   await connectDB();
@@ -7,8 +9,16 @@ export async function getUserNotifications(userId: string) {
   const notifications = await Notification.find({
     recipientId: userId,
   })
-    .populate("workspaceId", "name")
-    .populate("taskId", "title")
+    .populate({
+      path: "workspaceId",
+      select: "name",
+      model: Workspace,
+    })
+    .populate({
+      path: "taskId",
+      select: "title",
+      model: Task,
+    })
     .sort({ createdAt: -1 })
     .lean();
 

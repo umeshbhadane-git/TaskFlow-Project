@@ -66,14 +66,46 @@ export default async function WorkspacesPage() {
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
           {workspaces.map((workspace) => (
-            <Link
+            <div
               key={workspace.id}
-              href={`/workspaces/${workspace.id}`}
-              className="group rounded-xl border border-gray-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-blue-300 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-800 dark:bg-gray-900 dark:hover:border-blue-700"
+              className={`rounded-xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-800 dark:bg-gray-900 ${
+                workspace.status === "ACTIVE"
+                  ? "transition hover:-translate-y-0.5 hover:border-blue-300 hover:shadow-md dark:hover:border-blue-700"
+                  : "cursor-not-allowed opacity-70"
+              }`}
             >
+              {workspace.status === "ACTIVE" ? (
+                <Link
+                  href={`/workspaces/${workspace.id}`}
+                  aria-label={`Open ${workspace.name} workspace`}
+                  className="block rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <WorkspaceCardContent workspace={workspace} />
+                </Link>
+              ) : (
+                <WorkspaceCardContent workspace={workspace} />
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+    </section>
+  );
+}
+
+type WorkspaceCardData = Awaited<
+  ReturnType<typeof getUserWorkspaces>
+>[number];
+
+function WorkspaceCardContent({
+  workspace,
+}: {
+  workspace: WorkspaceCardData;
+}) {
+  return (
               <div className="flex items-start justify-between gap-4">
                 <div className="min-w-0">
-                  <h2 className="truncate text-lg font-semibold text-gray-900 group-hover:text-blue-600 dark:text-white dark:group-hover:text-blue-400">
+                  <h2 className="truncate text-lg font-semibold text-gray-900 dark:text-white">
                     {workspace.name}
                   </h2>
 
@@ -82,14 +114,20 @@ export default async function WorkspacesPage() {
                   </p>
                 </div>
 
-                <span className="shrink-0 rounded-full bg-gray-100 px-2.5 py-1 text-xs font-medium text-gray-700 dark:bg-gray-800 dark:text-gray-300">
-                  {workspace.role}
-                </span>
+                <div className="flex shrink-0 flex-col items-end gap-2">
+                  <span className="rounded-full bg-gray-100 px-2.5 py-1 text-xs font-medium text-gray-700 dark:bg-gray-800 dark:text-gray-300">
+                    {workspace.role}
+                  </span>
+                  <span
+                    className={`rounded-full px-2.5 py-1 text-xs font-medium ${
+                      workspace.status === "ACTIVE"
+                        ? "bg-green-100 text-green-700 dark:bg-green-950/40 dark:text-green-400"
+                        : "bg-red-100 text-red-700 dark:bg-red-950/40 dark:text-red-400"
+                    }`}
+                  >
+                    {workspace.status === "ACTIVE" ? "Active" : "Deleted"}
+                  </span>
+                </div>
               </div>
-            </Link>
-          ))}
-        </div>
-      )}
-    </section>
   );
 }

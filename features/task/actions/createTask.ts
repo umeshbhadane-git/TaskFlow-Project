@@ -4,10 +4,15 @@ import mongoose from "mongoose";
 
 import { auth } from "@/lib/auth";
 import { connectDB } from "@/lib/db";
+
 import Task from "@/models/Task";
+import User from "@/models/User";
 import Workspace from "@/models/Workspace";
 import WorkspaceMember from "@/models/WorkspaceMember";
+import Notification from "@/models/Notification";
+
 import { createTaskSchema } from "@/features/task/schemas/task.schema";
+import { recordWorkspaceActivity } from "@/features/workspace/services/recordWorkspaceActivity";
 
 export type CreateTaskActionResult =
   | {
@@ -49,7 +54,9 @@ export async function createTask(
     // 2. Get workspace ID
     // --------------------------------------------------
 
-    const workspaceId = String(formData.get("workspaceId") || "");
+    const workspaceId = String(
+      formData.get("workspaceId") || ""
+    );
 
     if (!mongoose.Types.ObjectId.isValid(workspaceId)) {
       return {
@@ -74,7 +81,8 @@ export async function createTask(
       tags: formData.get("tags"),
     };
 
-    const validationResult = createTaskSchema.safeParse(rawData);
+    const validationResult =
+      createTaskSchema.safeParse(rawData);
 
     if (!validationResult.success) {
       return {
@@ -107,7 +115,8 @@ export async function createTask(
     // 5. Check workspace
     // --------------------------------------------------
 
-    const workspace = await Workspace.findById(workspaceId);
+    const workspace =
+      await Workspace.findById(workspaceId);
 
     if (!workspace) {
       return {
@@ -120,21 +129,40 @@ export async function createTask(
     }
 
     // --------------------------------------------------
-    // 6. Only workspace owner can create tasks
+    // 6. Check workspace status
     // --------------------------------------------------
 
-    if (workspace.ownerId.toString() !== session.user.id) {
+    if (workspace.status === "INACTIVE") {
       return {
         success: false,
         error: {
-          code: "FORBIDDEN",
-          message: "Only the workspace owner can create tasks.",
+          code: "WORKSPACE_INACTIVE",
+          message:
+            "This workspace is inactive. You cannot create tasks in it.",
         },
       };
     }
 
     // --------------------------------------------------
-    // 7. Check assignee belongs to workspace
+    // 7. Only workspace owner can create tasks
+    // --------------------------------------------------
+
+    if (
+      workspace.ownerId.toString() !==
+      session.user.id
+    ) {
+      return {
+        success: false,
+        error: {
+          code: "FORBIDDEN",
+          message:
+            "Only the workspace owner can create tasks.",
+        },
+      };
+    }
+
+    // --------------------------------------------------
+    // 8. Check assignee belongs to workspace
     // --------------------------------------------------
 
     if (!mongoose.Types.ObjectId.isValid(assigneeId)) {
@@ -147,23 +175,40 @@ export async function createTask(
       };
     }
 
-    const assigneeMembership = await WorkspaceMember.findOne({
-      workspaceId,
-      userId: assigneeId,
-    });
+    const assigneeMembership =
+      await WorkspaceMember.findOne({
+        workspaceId,
+        userId: assigneeId,
+      });
 
     if (!assigneeMembership) {
       return {
         success: false,
         error: {
           code: "INVALID_ASSIGNEE",
-          message: "Selected user is not a member of this workspace.",
+          message:
+            "Selected assignee is not a member of this workspace.",
+        },
+      };
+    }
+
+    // Workspace owner cannot be assigned a task
+    if (
+      workspace.ownerId.toString() ===
+      assigneeId
+    ) {
+      return {
+        success: false,
+        error: {
+          code: "INVALID_ASSIGNEE",
+          message:
+            "The workspace owner cannot be assigned a task.",
         },
       };
     }
 
     // --------------------------------------------------
-    // 8. Convert due date
+    // 9. Convert due date
     // --------------------------------------------------
 
     const parsedDueDate = new Date(dueDate);
@@ -173,13 +218,14 @@ export async function createTask(
         success: false,
         error: {
           code: "INVALID_DUE_DATE",
-          message: "Please select a valid due date.",
+          message:
+            "Please select a valid due date.",
         },
       };
     }
 
     // --------------------------------------------------
-    // 9. Convert tags
+    // 10. Convert tags
     // --------------------------------------------------
 
     const parsedTags = tags
@@ -190,7 +236,7 @@ export async function createTask(
       : [];
 
     // --------------------------------------------------
-    // 10. Create task
+    // 11. Create task
     // --------------------------------------------------
 
     const task = await Task.create({
@@ -205,13 +251,57 @@ export async function createTask(
       tags: parsedTags,
     });
 
+    await recordWorkspaceActivity({
+      workspaceId,
+      actorId: session.user.id,
+      type: "TASK_CREATED",
+      taskId: task._id.toString(),
+      taskTitle: task.title,
+    });
+
+    if (assigneeId !== session.user.id) {
+      await recordWorkspaceActivity({
+        workspaceId,
+        actorId: session.user.id,
+        type: "TASK_ASSIGNED",
+        targetUserId: assigneeId,
+        taskId: task._id.toString(),
+        taskTitle: task.title,
+      });
+    }
+
     // --------------------------------------------------
-    // 11. Success
+    // 12. Get assignee
+    // --------------------------------------------------
+
+    const assignee = await User.findById(
+      assigneeId
+    ).select("name");
+
+    // --------------------------------------------------
+    // 13. Create task-assigned notification
+    // --------------------------------------------------
+
+    await Notification.create({
+      recipientId: assigneeId,
+      workspaceId,
+      taskId: task._id,
+      type: "TASK_ASSIGNED",
+      message: `You have been assigned the task "${title}".`,
+      read: false,
+    });
+
+    // --------------------------------------------------
+    // 14. Success
     // --------------------------------------------------
 
     return {
       success: true,
-      message: "Task created successfully.",
+      message: `Task created successfully${
+        assignee?.name
+          ? ` and assigned to ${assignee.name}`
+          : ""
+      }.`,
       taskId: task._id.toString(),
     };
   } catch (error) {
@@ -221,7 +311,8 @@ export async function createTask(
       success: false,
       error: {
         code: "INTERNAL_ERROR",
-        message: "Something went wrong. Please try again.",
+        message:
+          "Something went wrong. Please try again.",
       },
     };
   }

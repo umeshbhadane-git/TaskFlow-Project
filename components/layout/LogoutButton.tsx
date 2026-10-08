@@ -12,7 +12,7 @@ export default function LogoutButton() {
       setIsPending(true);
 
       await signOut({
-        callbackUrl: "/login",
+        redirectTo: "/",
       });
     } catch (error) {
       console.error("Logout error:", error);
