@@ -31,49 +31,25 @@ export default function EditCommentButton({
   const [isEditing, setIsEditing] =
     useState(false);
 
-  const [state, formAction, isPending] =
-    useActionState(
-      updateComment,
-      initialState
-    );
-
-  const handleSubmit = async (
-    formData: FormData
-  ) => {
-    const result = await updateComment(
-      state,
-      formData
-    );
-
-    if (result.success) {
-      setIsEditing(false);
-      router.refresh();
-    }
-
-    return result;
-  };
-
-  const [
-    submitState,
-    ,
-    submitPending,
-  ] = useActionState(
+  const [state, formAction, isPending] = useActionState(
     async (
       _previousState: UpdateCommentActionResult,
       formData: FormData
     ) => {
-      return handleSubmit(formData);
+      const result = await updateComment(
+        _previousState,
+        formData
+      );
+
+      if (result.success) {
+        setIsEditing(false);
+        router.refresh();
+      }
+
+      return result;
     },
     initialState
   );
-
-  const currentState =
-    submitState.success || submitState.error.message
-      ? submitState
-      : state;
-
-  const pending =
-    isPending || submitPending;
 
   if (!isEditing) {
     return (
@@ -89,9 +65,7 @@ export default function EditCommentButton({
 
   return (
     <form
-      action={async (formData) => {
-        await handleSubmit(formData);
-      }}
+      action={formAction}
       className="mt-2 space-y-2"
     >
       <input
@@ -104,35 +78,35 @@ export default function EditCommentButton({
         name="body"
         defaultValue={initialBody}
         rows={3}
-        disabled={pending}
+        disabled={isPending}
         className="w-full resize-none rounded-lg border border-gray-200 bg-white p-3 text-sm outline-none focus:border-blue-500 dark:border-gray-700 dark:bg-gray-900"
       />
 
-      {currentState.success && (
+      {state.success && (
         <p className="text-xs text-green-600">
-          {currentState.message}
+          {state.message}
         </p>
       )}
 
-      {!currentState.success &&
-        currentState.error.message && (
+      {!state.success &&
+        state.error.message && (
           <p className="text-xs text-red-600">
-            {currentState.error.message}
+            {state.error.message}
           </p>
         )}
 
       <div className="flex gap-2">
         <button
           type="submit"
-          disabled={pending}
+          disabled={isPending}
           className="rounded-md bg-blue-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-blue-700 disabled:opacity-50"
         >
-          {pending ? "Saving..." : "Save"}
+          {isPending ? "Saving..." : "Save"}
         </button>
 
         <button
           type="button"
-          disabled={pending}
+          disabled={isPending}
           onClick={() => setIsEditing(false)}
           className="rounded-md border border-gray-200 px-3 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800"
         >

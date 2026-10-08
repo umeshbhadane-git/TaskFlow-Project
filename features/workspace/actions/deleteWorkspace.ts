@@ -6,7 +6,6 @@ import { auth } from "@/lib/auth";
 import { connectDB } from "@/lib/db";
 
 import Workspace from "@/models/Workspace";
-import WorkspaceMember from "@/models/WorkspaceMember";
 import Task from "@/models/Task";
 import JoinRequest from "@/models/JoinRequest";
 
