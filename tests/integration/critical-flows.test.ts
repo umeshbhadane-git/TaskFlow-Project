@@ -159,6 +159,49 @@ describe("critical application flows", () => {
     expect(mocks.notificationCreate).toHaveBeenCalledOnce();
   });
 
+  it("allows the workspace owner to assign a task to themselves", async () => {
+    mocks.auth.mockResolvedValue({ user: { id: ownerId } });
+    mocks.workspaceFindById.mockResolvedValue({
+      status: "ACTIVE",
+      ownerId,
+    });
+    mocks.workspaceMemberFindOne.mockResolvedValue({ role: "OWNER" });
+    mocks.taskCreate.mockResolvedValue({
+      _id: { toString: () => taskId },
+      title: "Review pull request",
+    });
+    mocks.userFindById.mockReturnValue({
+      select: vi.fn().mockResolvedValue({ name: "Owner" }),
+    });
+
+    const result = await createTask(
+      { success: false, error: { code: "", message: "" } },
+      makeFormData({
+        workspaceId,
+        title: "Review pull request",
+        description: "",
+        priority: "MEDIUM",
+        dueDate: "2026-12-01",
+        assigneeId: ownerId,
+        tags: "",
+      })
+    );
+
+    expect(result).toMatchObject({
+      success: true,
+      taskId,
+    });
+    expect(mocks.taskCreate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        assigneeId: ownerId,
+        createdBy: ownerId,
+      })
+    );
+    expect(mocks.notificationCreate).toHaveBeenCalledWith(
+      expect.objectContaining({ recipientId: ownerId })
+    );
+  });
+
   it("creates a comment for a workspace member and records activity", async () => {
     mocks.auth.mockResolvedValue({ user: { id: memberId } });
     mocks.taskFindById.mockResolvedValue({

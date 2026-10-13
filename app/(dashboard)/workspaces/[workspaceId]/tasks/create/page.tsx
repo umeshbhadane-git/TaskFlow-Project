@@ -49,13 +49,7 @@ export default async function CreateTaskPage({
     redirect(`/workspaces/${workspaceId}/tasks`);
   }
 
-  // Get workspace members except the owner
-  const allMembers = await getWorkspaceMembers(workspaceId);
-
-  const members = allMembers.filter(
-    (member) =>
-      member.id !== workspace.ownerId.toString()
-  );
+  const members = await getWorkspaceMembers(workspaceId);
 
   return (
     <div className="mx-auto max-w-3xl">

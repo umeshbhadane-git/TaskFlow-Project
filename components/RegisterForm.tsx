@@ -2,6 +2,8 @@
 
 import { useActionState } from "react";
 import Link from "next/link";
+import { signIn } from "next-auth/react";
+import { useRouter } from "next/navigation";
 
 import {
   registerUser,
@@ -17,8 +19,55 @@ const initialState: RegisterActionResult = {
 };
 
 export default function RegisterForm() {
+  const router = useRouter();
+
+  async function registerAndSignIn(
+    previousState: RegisterActionResult,
+    formData: FormData
+  ): Promise<RegisterActionResult> {
+    const result = await registerUser(previousState, formData);
+
+    if (!result.success) {
+      return result;
+    }
+
+    try {
+      const signInResult = await signIn("credentials", {
+        email: formData.get("email"),
+        password: formData.get("password"),
+        redirect: false,
+      });
+
+      if (!signInResult || signInResult.error) {
+        return {
+          success: false,
+          error: {
+            code: "SIGN_IN_FAILED",
+            message:
+              "Your account was created, but automatic sign-in failed. Please log in.",
+          },
+        };
+      }
+
+      router.replace("/dashboard");
+      router.refresh();
+      return result;
+    } catch (error) {
+      console.error("Automatic sign-in after registration failed:", error);
+
+      return {
+        success: false,
+        error: {
+          code: "SIGN_IN_FAILED",
+          message:
+            "Your account was created, but automatic sign-in failed. Please log in.",
+        },
+      };
+    }
+  }
+
   const [state, formAction, isPending] = useActionState(
-    registerUser,
+    registerAndSignIn,
     initialState
   );
 

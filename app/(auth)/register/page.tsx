@@ -1,8 +1,16 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 
+import { auth } from "@/lib/auth";
 import RegisterForm from "@/components/RegisterForm";
 
-export default function RegisterPage() {
+export default async function RegisterPage() {
+  const session = await auth();
+
+  if (session?.user?.id) {
+    redirect("/dashboard");
+  }
+
   return (
     <main className="flex min-h-screen items-center justify-center bg-gray-50 px-4 py-8 dark:bg-gray-950">
       <div className="w-full max-w-md">

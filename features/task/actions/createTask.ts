@@ -192,21 +192,6 @@ export async function createTask(
       };
     }
 
-    // Workspace owner cannot be assigned a task
-    if (
-      workspace.ownerId.toString() ===
-      assigneeId
-    ) {
-      return {
-        success: false,
-        error: {
-          code: "INVALID_ASSIGNEE",
-          message:
-            "The workspace owner cannot be assigned a task.",
-        },
-      };
-    }
-
     // --------------------------------------------------
     // 9. Convert due date
     // --------------------------------------------------
